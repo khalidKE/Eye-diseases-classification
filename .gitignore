@@ -1,22 +1,116 @@
-# Data
-data/
-
 # Python
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
 venv/
-.venv/
 env/
+ENV/
+.venv/
 
-# IDEs
-.vscode/
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints/*
+
+# PyCharm
 .idea/
+*.iml
+*.iws
 
-# Results & Models
-models/
-logs/
-results/
+# VS Code
+.vscode/
+*.code-workspace
 
-# Notebooks
-.ipynb_checkpoints/
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# Dataset (Large files)
+/dataset/
+/datasets/
+/data/
+*.jpg
+*.jpeg
+*.png
+*.bmp
+*.gif
+*.tif
+*.tiff
+*.webp
+!assets/*.png
+!assets/*.jpg
+!docs/*.png
+!docs/*.jpg
+
+# Models (Large files)
+/models/
+/checkpoints/
+*.h5
+*.hdf5
+*.pkl
+*.pth
+*.pt
+*.onnx
+*.pb
+*.ckpt
+*.ckpt.*
+saved_model/
+*.weights
+
+# Logs and Results
+/logs/
+/runs/
+/wandb/
+*.log
+*.out
+*.err
+tensorboard_logs/
+
+# Cache
+.cache/
+*.cache
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Coverage
+htmlcov/
+.coverage
+.coverage.*
+.cover
+*.cover
+.hypothesis/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Misc
+*.swp
+*.swo
+*~
+*.bak
+*.tmp
+*.temp
