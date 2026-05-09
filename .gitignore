@@ -36,12 +36,9 @@ ENV/
 *.iws
 
 # VS Code
-.vscode/
 *.code-workspace
 
 # Environment Variables
-.env
-.env.local
 .env.*.local
 
 # Dataset (Large files)
@@ -120,3 +117,5 @@ $RECYCLE.BIN/
 *.gitignore
 .git/
 .gitmodules
+config.bat
+node_modules
