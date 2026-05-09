@@ -47,15 +47,6 @@ ENV/
 # Dataset (Large files)
 /dataset/
 /datasets/
-/data/
-*.jpg
-*.jpeg
-*.png
-*.bmp
-*.gif
-*.tif
-*.tiff
-*.webp
 !assets/*.png
 !assets/*.jpg
 !docs/*.png
@@ -114,3 +105,6 @@ $RECYCLE.BIN/
 *.bak
 *.tmp
 *.temp
+
+# Allow data zip
+!data_processed.zip
