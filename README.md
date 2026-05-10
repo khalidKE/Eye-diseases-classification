@@ -1,6 +1,5 @@
 # Eye Diseases Classification Using Deep Learning
 
-
 ## Overview
 
 This project implements an automated system for classifying retinal images into four categories: **Normal**, **Diabetic Retinopathy**, **Cataract**, and **Glaucoma**. The system utilizes deep learning techniques to assist in early detection and diagnosis of eye diseases from fundus photographs.
