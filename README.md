@@ -33,6 +33,7 @@ dataset/
     └── *.jpg
 ```
 
+
 ### Image Specifications
 
 - **Format**: JPG, JPEG, PNG
