@@ -440,4 +440,5 @@ This project is intended for educational and research purposes. Medical images u
 
 ---
 
+
 **Note**: This system is designed for research and educational purposes. It should not be used as a substitute for professional medical diagnosis. Always consult qualified healthcare professionals for medical advice and diagnosis.
