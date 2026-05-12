@@ -47,6 +47,7 @@ ENV/
 # Dataset (Large files)
 /dataset/
 /datasets/
+<<<<<<< HEAD
 /data/
 *.jpg
 *.jpeg
@@ -56,6 +57,8 @@ ENV/
 *.tif
 *.tiff
 *.webp
+=======
+>>>>>>> dev1/data-pipeline
 !assets/*.png
 !assets/*.jpg
 !docs/*.png
@@ -115,8 +118,14 @@ $RECYCLE.BIN/
 *.tmp
 *.temp
 
+<<<<<<< HEAD
 
 .gitignore
 *.gitignore
 .git/
 .gitmodules
+=======
+# Allow data zip
+!data_processed.zip
+
+>>>>>>> dev1/data-pipeline
