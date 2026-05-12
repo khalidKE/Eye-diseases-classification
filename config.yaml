@@ -1,0 +1,143 @@
+# Eye Disease Classification Project Configuration
+
+# Project Settings
+project:
+  name: "Eye Disease Classification"
+  version: "1.0.0"
+  description: "Deep Learning model for classifying retinal images into 4 disease categories"
+  random_seed: 42
+
+# Dataset Configuration
+dataset:
+  name: "Eye Diseases Classification"
+  source: "https://www.kaggle.com/datasets/gunavenkatdoddi/eye-diseases-classification"
+  classes:
+    - normal
+    - diabetic_retinopathy
+    - cataract
+    - glaucoma
+  class_labels:
+    normal: 0
+    diabetic_retinopathy: 1
+    cataract: 2
+    glaucoma: 3
+  
+  # Paths
+  raw_data_path: "data/raw"
+  processed_data_path: "data/data_processed/processed_split"
+  
+  # Image Settings
+  image_size: 224  # Options: 224, 299
+  channels: 3
+  
+  # Data Split
+  train_ratio: 0.70
+  val_ratio: 0.15
+  test_ratio: 0.15
+
+# Data Augmentation
+augmentation:
+  enabled: true
+  rotation_range: 15
+  width_shift_range: 0.1
+  height_shift_range: 0.1
+  zoom_range: [0.9, 1.1]
+  horizontal_flip: true
+  brightness_range: [0.8, 1.2]
+  fill_mode: "nearest"
+
+# Model Configuration
+model:
+  # Available architectures
+  architectures:
+    - cnn_baseline
+    - resnet50
+    - efficientnet_b0
+  
+  # Default model
+  default: "efficientnet_b0"
+  
+  # CNN Baseline Settings
+  cnn_baseline:
+    conv_layers:
+      - filters: 32
+        kernel_size: 3
+        activation: "relu"
+      - filters: 64
+        kernel_size: 3
+        activation: "relu"
+      - filters: 128
+        kernel_size: 3
+        activation: "relu"
+    dense_units: 512
+    dropout_rate: 0.5
+  
+  # Transfer Learning Settings
+  transfer_learning:
+    freeze_base: true
+    fine_tune_from_layer: -20  # Unfreeze last 20 layers for fine-tuning
+    
+# Training Configuration
+training:
+  batch_size: 32
+  epochs: 50
+  early_stopping_patience: 10
+  reduce_lr_patience: 5
+  reduce_lr_factor: 0.2
+  min_lr: 1e-7
+  
+  # Optimizer
+  optimizer: "adam"
+  learning_rate: 0.001
+  
+  # Loss Function
+  loss: "categorical_crossentropy"
+  
+  # Callbacks
+  callbacks:
+    model_checkpoint: true
+    early_stopping: true
+    reduce_lr_on_plateau: true
+    tensorboard: true
+
+# Paths
+paths:
+  models: "models"
+  logs: "logs"
+  results: "results"
+  notebooks: "notebooks"
+  src: "src"
+  
+# Evaluation Configuration
+evaluation:
+  metrics:
+    - accuracy
+    - precision
+    - recall
+    - f1_score
+    - auc
+  
+  # Grad-CAM Settings
+  gradcam:
+    enabled: true
+    layer_name: "auto"  # Auto-detect last conv layer
+    alpha: 0.4
+    colormap: "jet"
+
+# Inference Configuration
+inference:
+  confidence_threshold: 0.5
+  top_k_predictions: 3
+
+# Application Configuration
+app:
+  title: "Eye Disease Classification"
+  description: "Upload a retinal image to get disease classification"
+  max_file_size: 10  # MB
+  supported_formats: ["jpg", "jpeg", "png"]
+
+# Logging
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/training.log"

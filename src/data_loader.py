@@ -1,13 +1,46 @@
+"""
+Data Loader Module for Eye Disease Classification
+
+Handles:
+- Loading image paths and labels
+- Train/Validation/Test splitting
+- TensorFlow Dataset creation
+- Data augmentation integration
+"""
+
 import os
 import glob
-import yaml
+import logging
+from typing import List, Tuple, Optional, Dict
+import numpy as np
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
-from augmentation import augment_image, get_batch_augmentations
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-def load_config(config_path="shared/config.yaml"):
-    with open(config_path, "r") as f:
-        return yaml.safe_load(f)
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Default configuration
+DEFAULT_CONFIG = {
+    'dataset': {
+        'processed_data_path': 'data/processed',
+        'classes': ['normal', 'diabetic_retinopathy', 'cataract', 'glaucoma'],
+        'image_size': 224
+    },
+    'training': {
+        'batch_size': 32
+    },
+    'augmentation': {
+        'enabled': True,
+        'rotation_range': 15,
+        'width_shift_range': 0.1,
+        'height_shift_range': 0.1,
+        'zoom_range': 0.1,
+        'horizontal_flip': True,
+        'brightness_range': [0.8, 1.2]
+    }
+}
 
 def get_image_paths_and_labels(dataset_dir, classes):
     paths = []
@@ -39,35 +72,35 @@ def create_tf_dataset(paths, labels, batch_size, is_training=False):
     
     if is_training:
         dataset = dataset.shuffle(buffer_size=1000)
-        # Apply image-level augmentations from our module
-        dataset = dataset.map(augment_image, num_parallel_calls=tf.data.AUTOTUNE)
     
     # Batch and prefetch for performance
     dataset = dataset.batch(batch_size)
-    
-    # Apply batch-level augmentations (rotation/zoom) if training
-    if is_training:
-        batch_augment = get_batch_augmentations()
-        dataset = dataset.map(batch_augment, num_parallel_calls=tf.data.AUTOTUNE)
-        
     dataset = dataset.prefetch(buffer_size=tf.data.AUTOTUNE)
     
     return dataset
 
-def get_data_generators(config_path="configs/config.yaml"):
+def get_data_generators(config: Dict = None):
     """
     Splits the dataset 70/15/15 and returns train, val, and test tf.data.Datasets.
-    """
-    config = load_config(config_path)
-    dataset_dir = config['data']['dataset_dir']
-    batch_size = config['data']['batch_size']
-    classes = config['data']['classes']
     
-    print(f"Loading data paths from {dataset_dir}...")
+    Args:
+        config: Configuration dictionary. If None, uses default config.
+        
+    Returns:
+        Tuple of (train_ds, val_ds, test_ds) or (None, None, None) if no data
+    """
+    if config is None:
+        config = DEFAULT_CONFIG
+        
+    dataset_dir = config.get('dataset', {}).get('processed_data_path', 'data/processed')
+    batch_size = config.get('training', {}).get('batch_size', 32)
+    classes = config.get('dataset', {}).get('classes', ['normal', 'diabetic_retinopathy', 'cataract', 'glaucoma'])
+    
+    logger.info(f"Loading data paths from {dataset_dir}...")
     paths, labels = get_image_paths_and_labels(dataset_dir, classes)
     
     if not paths:
-        print(f"Warning: No images found in {dataset_dir}. Returning empty datasets.")
+        logger.warning(f"No images found in {dataset_dir}. Returning empty datasets.")
         return None, None, None
 
     # First split: 70% Train, 30% Temp (Val + Test)
@@ -80,20 +113,167 @@ def get_data_generators(config_path="configs/config.yaml"):
         X_temp, y_temp, test_size=0.50, random_state=42, stratify=y_temp
     )
     
-    print(f"Data Split -> Train: {len(X_train)} | Val: {len(X_val)} | Test: {len(X_test)}")
+    logger.info(f"Data Split -> Train: {len(X_train)} | Val: {len(X_val)} | Test: {len(X_test)}")
     
     train_ds = create_tf_dataset(X_train, y_train, batch_size, is_training=True)
     val_ds = create_tf_dataset(X_val, y_val, batch_size, is_training=False)
     test_ds = create_tf_dataset(X_test, y_test, batch_size, is_training=False)
     
-    # To maintain compatibility with train.py which currently unpacks two generators, 
-    # we return train and val. If train.py expects test_ds later, we return all three.
     return train_ds, val_ds, test_ds
 
+
+def create_image_data_generators(
+    data_dir: str,
+    classes: List[str],
+    image_size: Tuple[int, int] = (224, 224),
+    batch_size: int = 32,
+    validation_split: float = 0.15,
+    test_split: float = 0.15,
+    augmentation_config: Dict = None
+) -> Tuple:
+    """
+    Create Keras ImageDataGenerators for train, validation, and test.
+    
+    This is an alternative to tf.data.Dataset that some users prefer.
+    
+    Args:
+        data_dir: Directory containing processed images organized by class
+        classes: List of class names
+        image_size: Target image size (height, width)
+        batch_size: Batch size
+        validation_split: Fraction for validation
+        test_split: Fraction for test
+        augmentation_config: Augmentation parameters
+        
+    Returns:
+        Tuple of (train_generator, val_generator, test_generator)
+    """
+    if augmentation_config is None:
+        augmentation_config = DEFAULT_CONFIG['augmentation']
+    
+    # Training generator with augmentation
+    if augmentation_config.get('enabled', True):
+        train_datagen = ImageDataGenerator(
+            rescale=1./255,
+            rotation_range=augmentation_config.get('rotation_range', 15),
+            width_shift_range=augmentation_config.get('width_shift_range', 0.1),
+            height_shift_range=augmentation_config.get('height_shift_range', 0.1),
+            zoom_range=augmentation_config.get('zoom_range', 0.1),
+            horizontal_flip=augmentation_config.get('horizontal_flip', True),
+            brightness_range=augmentation_config.get('brightness_range', [0.8, 1.2]),
+            validation_split=validation_split + test_split
+        )
+    else:
+        train_datagen = ImageDataGenerator(
+            rescale=1./255,
+            validation_split=validation_split + test_split
+        )
+    
+    # Validation/Test generator (no augmentation)
+    val_test_datagen = ImageDataGenerator(
+        rescale=1./255,
+        validation_split=validation_split + test_split
+    )
+    
+    # Training generator
+    train_generator = train_datagen.flow_from_directory(
+        data_dir,
+        target_size=image_size,
+        batch_size=batch_size,
+        classes=classes,
+        class_mode='categorical',
+        subset='training',
+        seed=42,
+        shuffle=True
+    )
+    
+    # Validation generator
+    val_generator = val_test_datagen.flow_from_directory(
+        data_dir,
+        target_size=image_size,
+        batch_size=batch_size,
+        classes=classes,
+        class_mode='categorical',
+        subset='validation',
+        seed=42,
+        shuffle=False
+    )
+    
+    # For test set, we need a separate generator with different subset
+    # Since we can't easily split validation into val+test with Keras,
+    # we'll use the same validation generator and split manually later
+    
+    return train_generator, val_generator, None
+
+
+def get_class_distribution(data_dir: str, classes: List[str]) -> Dict[str, int]:
+    """
+    Get the number of images per class.
+    
+    Args:
+        data_dir: Directory containing class subdirectories
+        classes: List of class names
+        
+    Returns:
+        Dictionary mapping class names to image counts
+    """
+    distribution = {}
+    for cls in classes:
+        cls_dir = os.path.join(data_dir, cls)
+        if os.path.exists(cls_dir):
+            image_files = glob.glob(os.path.join(cls_dir, '*.*'))
+            # Filter for image extensions
+            image_files = [f for f in image_files if f.lower().endswith(('.jpg', '.jpeg', '.png'))]
+            distribution[cls] = len(image_files)
+        else:
+            distribution[cls] = 0
+    return distribution
+
+
+def print_dataset_info(data_dir: str, classes: List[str]):
+    """
+    Print information about the dataset.
+    
+    Args:
+        data_dir: Directory containing the dataset
+        classes: List of class names
+    """
+    logger.info("\n" + "="*50)
+    logger.info("Dataset Information")
+    logger.info("="*50)
+    
+    distribution = get_class_distribution(data_dir, classes)
+    total = sum(distribution.values())
+    
+    logger.info(f"Data Directory: {data_dir}")
+    logger.info(f"Total Images: {total}")
+    logger.info("\nClass Distribution:")
+    
+    for cls, count in distribution.items():
+        percentage = (count / total * 100) if total > 0 else 0
+        logger.info(f"  {cls:25s}: {count:4d} images ({percentage:5.1f}%)")
+    
+    logger.info("="*50 + "\n")
+
+
 if __name__ == "__main__":
-    train_ds, val_ds, test_ds = get_data_generators()
-    if train_ds:
-        print("Data Loaders initialized successfully.")
-        for images, labels in train_ds.take(1):
-            print(f"Image batch shape: {images.shape}")
-            print(f"Label batch shape: {labels.shape}")
+    # Test the data loader
+    config = DEFAULT_CONFIG
+    
+    # Print dataset info
+    data_dir = config['dataset']['processed_data_path']
+    classes = config['dataset']['classes']
+    
+    if os.path.exists(data_dir):
+        print_dataset_info(data_dir, classes)
+        
+        # Test tf.data pipeline
+        train_ds, val_ds, test_ds = get_data_generators(config)
+        if train_ds:
+            logger.info("\nTensorFlow Datasets initialized successfully.")
+            for images, labels in train_ds.take(1):
+                logger.info(f"Image batch shape: {images.shape}")
+                logger.info(f"Label batch shape: {labels.shape}")
+    else:
+        logger.warning(f"Data directory not found: {data_dir}")
+        logger.info("Please run preprocessing first.")
