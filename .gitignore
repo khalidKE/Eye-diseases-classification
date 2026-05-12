@@ -36,12 +36,9 @@ ENV/
 *.iws
 
 # VS Code
-.vscode/
 *.code-workspace
 
 # Environment Variables
-.env
-.env.local
 .env.*.local
 
 # Dataset (Large files)
@@ -108,3 +105,6 @@ $RECYCLE.BIN/
 
 # Allow data zip
 !data_processed.zip
+
+config.bat
+node_modules
