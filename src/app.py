@@ -23,6 +23,7 @@ import tempfile
 
 from src.predict import EyeDiseasePredictor, format_prediction_result, get_prediction_color
 from src.gradcam import generate_gradcam_for_model
+from src.report_pdf import generate_prediction_pdf
 from src.config import CLASS_NAMES_DISPLAY, CLASS_COLORS, CLASS_NAMES
 
 # Page configuration
@@ -278,6 +279,7 @@ def main():
                         return
             
             # Grad-CAM visualization
+            gradcam_available = False
             if show_gradcam:
                 st.markdown("---")
                 
@@ -291,11 +293,10 @@ def main():
                             save_path=gradcam_path,
                             image_size=224
                         )
-                        
+                        gradcam_available = True
                         display_image_comparison(image_path, gradcam_path)
                     
                     except Exception as e:
-                        logger.warning(f"Grad-CAM generation failed: {e}")
                         # Show original image without Grad-CAM
                         col1, col2 = st.columns(2)
                         with col1:
@@ -304,8 +305,11 @@ def main():
                             st.image(image, use_container_width=True)
                         with col2:
                             st.subheader("🔥 Grad-CAM")
-                            st.info("Grad-CAM visualization unavailable for this model architecture.\n\nThe AI prediction above is still accurate - only the heatmap overlay is disabled.")
-                            st.caption("This is a known issue with TensorFlow 2.21+ Keras 3 models.")
+                            st.info(
+                                "Grad-CAM visualization unavailable for this model architecture.\n\n"
+                                "The AI prediction above is still valid — only the heatmap overlay is disabled."
+                            )
+                            st.caption(f"Detail: {e}")
             
             # Additional information
             st.markdown("---")
@@ -334,15 +338,36 @@ def main():
             
             st.markdown(info_texts.get(predicted_class, ""))
             
-            # Download button for results
+            # Download buttons for results
             st.markdown("---")
+            st.subheader("📥 Export Report")
+
+            col_txt, col_pdf = st.columns(2)
+
             result_text = format_prediction_result(result, detailed=True)
-            st.download_button(
-                label="📥 Download Prediction Report",
-                data=result_text,
-                file_name="prediction_report.txt",
-                mime="text/plain"
-            )
+            with col_txt:
+                st.download_button(
+                    label="Download Text Report",
+                    data=result_text,
+                    file_name="prediction_report.txt",
+                    mime="text/plain",
+                    use_container_width=True,
+                )
+
+            with col_pdf:
+                pdf_bytes = generate_prediction_pdf(
+                    result=result,
+                    image_name=uploaded_file.name,
+                    model_name=Path(model_path).name,
+                    gradcam_available=gradcam_available,
+                )
+                st.download_button(
+                    label="Download PDF Report",
+                    data=pdf_bytes,
+                    file_name="Technical_Report.pdf",
+                    mime="application/pdf",
+                    use_container_width=True,
+                )
 
 
 if __name__ == "__main__":

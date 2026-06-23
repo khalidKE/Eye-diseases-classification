@@ -33,6 +33,7 @@ streamlit>=1.12.0
 # Configuration & Utilities
 PyYAML>=6.0
 tqdm>=4.62.0
+reportlab>=3.6.0
 
 # Logging & Experiment Tracking
 tensorboard>=2.10.0
