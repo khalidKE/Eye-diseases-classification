@@ -8,10 +8,18 @@ This module contains:
 """
 
 import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers, Model
-from tensorflow.keras.applications import ResNet50, EfficientNetB0
-from tensorflow.keras.regularizers import l2
+
+# Keras compatibility imports: prefer tensorflow.keras, fall back to standalone keras
+try:
+    from tensorflow import keras
+    from tensorflow.keras import layers, Model
+    from tensorflow.keras.applications import ResNet50, EfficientNetB0
+    from tensorflow.keras.regularizers import l2
+except Exception:
+    import keras
+    from keras import layers, Model
+    from keras.applications import ResNet50, EfficientNetB0
+    from keras.regularizers import l2
 
 
 def create_baseline_cnn(

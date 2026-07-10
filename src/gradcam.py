@@ -14,7 +14,12 @@ import cv2
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import tensorflow as tf
-from tensorflow import keras
+
+# Keras import compatibility: prefer tensorflow.keras, otherwise fallback to keras
+try:
+    from tensorflow import keras
+except Exception:
+    import keras
 
 from src.preprocessing import preprocess_image
 from src.config import CLASS_NAMES_DISPLAY

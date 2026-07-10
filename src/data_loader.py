@@ -15,7 +15,18 @@ from typing import List, Tuple, Optional, Dict
 import numpy as np
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
+
+# Keras import compatibility: prefer tensorflow.keras when available.
+# If that fails, try the lightweight keras_preprocessing package to avoid
+# pulling in the full `keras` backend which can initialize TensorFlow internals.
+try:
+    from tensorflow.keras.preprocessing.image import ImageDataGenerator
+except Exception:
+    try:
+        from keras_preprocessing.image import ImageDataGenerator
+    except Exception:
+        # Last resort: try the standalone keras package (may initialize backend)
+        from keras.preprocessing.image import ImageDataGenerator
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)

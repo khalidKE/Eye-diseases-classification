@@ -15,7 +15,12 @@ from pathlib import Path
 
 import numpy as np
 import cv2
-from tensorflow import keras
+
+# Keras import compatibility: prefer tensorflow.keras, otherwise fallback to keras
+try:
+    from tensorflow import keras
+except Exception:
+    import keras
 
 from src.config import CLASS_NAMES, CLASS_NAMES_DISPLAY, CLASS_COLORS
 from src.preprocessing import preprocess_image

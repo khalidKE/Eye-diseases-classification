@@ -17,13 +17,23 @@ from pathlib import Path
 
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras.callbacks import (
-    ModelCheckpoint,
-    EarlyStopping,
-    ReduceLROnPlateau,
-    TensorBoard,
-    CSVLogger
-)
+# Keras callbacks compatibility: prefer tensorflow.keras, otherwise use standalone keras
+try:
+    from tensorflow.keras.callbacks import (
+        ModelCheckpoint,
+        EarlyStopping,
+        ReduceLROnPlateau,
+        TensorBoard,
+        CSVLogger
+    )
+except Exception:
+    from keras.callbacks import (
+        ModelCheckpoint,
+        EarlyStopping,
+        ReduceLROnPlateau,
+        TensorBoard,
+        CSVLogger
+    )
 
 from src.models import create_model, compile_model
 from src.data_loader import get_data_generators, create_image_data_generators

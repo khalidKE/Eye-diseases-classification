@@ -34,7 +34,10 @@ dataset/
 ```
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
+=======
+>>>>>>> dev1/data-pipeline
 =======
 >>>>>>> dev1/data-pipeline
 ### Image Specifications
@@ -444,7 +447,12 @@ This project is intended for educational and research purposes. Medical images u
 
 ---
 <<<<<<< HEAD
+<<<<<<< HEAD
 **Note**: This system is designed for research and educational purposes. It should not be used as a substitute for professional medical diagnosis. Always consult qualified healthcare professionals for medical advice and diagnosis.
+=======
+
+**Note**: This system is designed for research and educational purposes. It should not be used as a substitute for professional medical diagnosis. Always consult qualified healthcare professionals for medical advice and diagnosis.
+>>>>>>> dev1/data-pipeline
 =======
 
 **Note**: This system is designed for research and educational purposes. It should not be used as a substitute for professional medical diagnosis. Always consult qualified healthcare professionals for medical advice and diagnosis.
